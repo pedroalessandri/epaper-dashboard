@@ -1,0 +1,13 @@
+[Unit]
+Description=Refrescar el dashboard e-paper cada 15 minutos
+
+[Timer]
+OnCalendar=*:0/15
+# Si la Pi estuvo apagada, correr apenas vuelva en vez de esperar al próximo.
+Persistent=true
+# Evita que varias units arranquen exactamente en el mismo segundo.
+RandomizedDelaySec=30
+Unit=epaper.service
+
+[Install]
+WantedBy=timers.target

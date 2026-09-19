@@ -1,0 +1,49 @@
+# Plantilla de configuración. Copiar a config.yaml y ajustar.
+#   cp config.example.yaml config.yaml
+# config.yaml está en .gitignore: no se versiona.
+
+# Ubicación para el clima. Por defecto, Ciudad de Buenos Aires.
+location:
+  name: "Buenos Aires"
+  latitude: -34.6037
+  longitude: -58.3816
+  timezone: "America/Argentina/Buenos_Aires"
+
+# Formato de presentación.
+display:
+  clock_format: "%H:%M"          # 24 h. Para 12 h: "%I:%M %p"
+  date_format: "%A %d de %B"
+  units: "metric"                # metric | imperial
+
+# Cada cuánto se refresca el panel. El timer de systemd usa este valor.
+refresh:
+  interval_minutes: 15
+  # Sin refrescos en este rango, para no parpadear de noche.
+  quiet_hours:
+    enabled: false
+    start: "23:00"
+    end: "07:00"
+  # Refresco completo forzado una vez por día, para limpiar ghosting.
+  full_refresh_at: "04:00"
+
+# Clima: franjas horarias del día corriente y cuántos días de pronóstico.
+weather:
+  enabled: true
+  periods:
+    morning: [6, 12]
+    afternoon: [12, 18]
+    evening: [18, 24]
+  forecast_days: 3               # días siguientes, en versión resumida
+
+# Tareas. En la v1 la fuente es local (tasks.json, editable desde el panel web).
+tasks:
+  enabled: true
+  source: "local"                # local | (futuro: n8n, google, todoist)
+  max_visible: 6                 # el resto se resume como "+N más"
+  show_completed: false
+
+# Panel web de configuración.
+web:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8080

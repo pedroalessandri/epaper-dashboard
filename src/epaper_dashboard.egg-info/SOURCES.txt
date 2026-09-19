@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/epaper/__init__.py
+src/epaper/display.py
+src/epaper/fonts.py
+src/epaper/main.py
+src/epaper/sources/__init__.py
+src/epaper/tiles/__init__.py
+src/epaper/tiles/base.py
+src/epaper/web/__init__.py
+src/epaper_dashboard.egg-info/PKG-INFO
+src/epaper_dashboard.egg-info/SOURCES.txt
+src/epaper_dashboard.egg-info/dependency_links.txt
+src/epaper_dashboard.egg-info/top_level.txt

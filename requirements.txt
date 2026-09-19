@@ -1,0 +1,12 @@
+# Instalar en un venv creado con --system-site-packages, para reutilizar
+# python3-pil, python3-numpy y python3-spidev que vienen de apt en la Pi.
+
+Pillow>=10.0           # provisto por apt (python3-pil) en la Pi
+PyYAML>=6.0            # lectura de config.yaml
+requests>=2.31         # cliente HTTP para Open-Meteo (fase 1a)
+
+# Panel web (fase 3). Comentar si se quiere una instalación mínima.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+jinja2>=3.1
+python-multipart>=0.0.9

@@ -1,0 +1,24 @@
+[Unit]
+Description=Actualizar el dashboard e-paper
+Documentation=https://github.com/palessandri/epaper-dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=__USER__
+WorkingDirectory=__REPO_DIR__
+Environment=EPAPER_BACKEND=waveshare
+Environment=PYTHONUNBUFFERED=1
+ExecStart=__REPO_DIR__/.venv/bin/python -m epaper.main
+
+# Si la red no está lista al arrancar, reintentar una vez.
+Restart=on-failure
+RestartSec=30s
+
+# El refresco del panel tarda unos segundos; si pasa de esto, algo se colgó
+# (típicamente la línea BUSY).
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
