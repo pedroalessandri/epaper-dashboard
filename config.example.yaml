@@ -17,7 +17,7 @@ display:
 
 # Cada cuánto se refresca el panel. El timer de systemd usa este valor.
 refresh:
-  interval_minutes: 15
+  interval_minutes: 5
   # Sin refrescos en este rango, para no parpadear de noche.
   quiet_hours:
     enabled: false

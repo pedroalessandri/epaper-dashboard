@@ -60,7 +60,9 @@ pin 28**.
 1. **Siempre cerrar con `epd.sleep()`.** Dejar el panel energizado lo degrada.
    Todo camino de salida, incluidas las excepciones, tiene que pasar por ahí.
 2. **Nunca refrescar en loop rápido.** El refresco completo tarda ~4 s y
-   parpadea. Cadencia mínima razonable: varios minutos.
+   parpadea. Waveshare recomienda un intervalo mínimo de **180 s** entre
+   refrescos. La cadencia elegida es **5 minutos** (`epaper.timer`,
+   `OnCalendar=*:0/5`; `refresh.interval_minutes: 5` en la config).
 3. **Refresco completo periódico.** Si se usa refresco parcial, hay que hacer
    uno completo cada tanto (al menos 1 vez por día) para evitar ghosting.
 4. **Imagen en modo `1`** (1 bit por píxel), 800×480, fondo 255 (blanco),
