@@ -68,8 +68,9 @@ el dashboard sigue andando.
 `deploy.sh` que hace pull en la Pi y reinicia el servicio. Suficiente para un
 proyecto de una sola máquina.
 
-**Cadencia.** Timer de systemd cada 15 minutos. Refresco completo siempre en
-la fase 1; refresco parcial recién en la fase 5, si hace falta.
+**Cadencia.** Timer de systemd cada 5 minutos (Waveshare recomienda ≥180 s
+entre refrescos). Refresco completo siempre en la fase 1; refresco parcial
+recién en la fase 5, si hace falta.
 
 ## Estructura del repo
 
@@ -203,7 +204,7 @@ con una versión simple y anotar el ajuste en el backlog.
 
 ## Fase 2 — Puesta en la Pi y servicio
 
-**Objetivo**: el dashboard se actualiza solo cada 15 minutos.
+**Objetivo**: el dashboard se actualiza solo cada 5 minutos.
 
 **Artefactos**: `scripts/setup-pi.sh` + units de systemd.
 
@@ -213,7 +214,7 @@ con una versión simple y anotar el ajuste en el backlog.
    relativas al repo clonado en `~/e-Paper`).
 2. `epaper.service`: tipo `oneshot`, usuario `palessandri`, `WorkingDirectory`
    del repo, `Environment=EPAPER_BACKEND=waveshare`.
-3. `epaper.timer`: `OnCalendar=*:0/15`, `Persistent=true`.
+3. `epaper.timer`: `OnCalendar=*:0/5`, `Persistent=true`.
 4. `deploy.sh`: desde la notebook, `ssh epaper.local` → `git pull` →
    `systemctl restart epaper.service` → mostrar las últimas líneas del journal.
 5. Primer despliegue manual y verificación en pantalla real.
@@ -287,7 +288,7 @@ resto.
 1. **Refresco completo diario** forzado, aunque se use parcial, para limpiar
    ghosting.
 2. **Refresco parcial** para el reloj, si se quiere cadencia de minutos. Medir
-   antes si vale la pena: el completo cada 15 minutos puede ser suficiente.
+   antes si vale la pena: el completo cada 5 minutos puede ser suficiente.
 3. **Modo nocturno**: sin refrescos entre determinadas horas. Ahorra desgaste y
    evita el parpadeo en un dormitorio.
 4. **Manejo de errores end-to-end**: que un fallo de red o de API deje la

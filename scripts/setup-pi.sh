@@ -20,6 +20,15 @@ sudo apt-get install -y \
     python3-venv python3-pil python3-numpy python3-spidev python3-gpiozero \
     fonts-dejavu-core git
 
+say "Locale en castellano"
+# Para los nombres de día y mes ("miércoles 23 de septiembre").
+if ! locale -a 2>/dev/null | grep -qi '^es_AR\.utf-\?8$'; then
+    sudo sed -i 's/^# *\(es_AR.UTF-8\)/\1/' /etc/locale.gen
+    sudo locale-gen
+else
+    echo "  es_AR.UTF-8 ya está generado"
+fi
+
 say "Librería de Waveshare"
 if [ ! -d "$WAVESHARE_DIR" ]; then
     git clone --depth 1 https://github.com/waveshareteam/e-Paper.git "$WAVESHARE_DIR"

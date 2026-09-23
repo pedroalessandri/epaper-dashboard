@@ -1,7 +1,4 @@
-"""Entrypoint del dashboard.
-
-Fase 0: dibuja hora y fecha, nada más. El objetivo de esta fase es validar la
-cadena completa (render -> display -> panel), no el diseño final.
+"""Entrypoint del dashboard: leer config → datos → render → mostrar.
 
 Uso:
     EPAPER_BACKEND=mock      python3 -m epaper.main     # notebook
@@ -12,50 +9,39 @@ Uso:
 from __future__ import annotations
 
 import argparse
-import locale
 import logging
 import sys
 from datetime import datetime
+from typing import Any
+from zoneinfo import ZoneInfo
 
-from PIL import ImageDraw
-
-from epaper import fonts
-from epaper.display import BLACK, WIDTH, get_display, new_canvas
+from epaper import config
+from epaper.display import get_display
+from epaper.render import render
+from epaper.sources import openmeteo
 
 log = logging.getLogger(__name__)
 
 
-def _setup_locale() -> None:
-    """Intenta poner el locale en castellano para los nombres de día y mes."""
-    for candidate in ("es_AR.UTF-8", "es_ES.UTF-8", "es_AR", "es_ES"):
-        try:
-            locale.setlocale(locale.LC_TIME, candidate)
-            return
-        except locale.Error:
-            continue
-    log.info("Sin locale en castellano; los nombres de día y mes van en inglés")
+def _now(cfg: dict[str, Any]) -> datetime:
+    """Hora en la zona de la config, no la del sistema."""
+    try:
+        return datetime.now(ZoneInfo(cfg["location"]["timezone"]))
+    except Exception as exc:
+        log.warning("Zona horaria inválida (%s); se usa la del sistema", exc)
+        return datetime.now().astimezone()
 
 
-def render(now: datetime | None = None):
-    """Compone la imagen de la fase 0: hora grande y fecha debajo."""
-    now = now or datetime.now()
-
-    img = new_canvas()
-    draw = ImageDraw.Draw(img)
-
-    hora = now.strftime("%H:%M")
-    fecha = now.strftime("%A %d de %B").lower()
-
-    f_hora = fonts.load(180, bold=True)
-    f_fecha = fonts.load(40)
-
-    # Centrado horizontal usando la caja real del texto, no una estimación.
-    for text, font, y in ((hora, f_hora, 110), (fecha, f_fecha, 300)):
-        left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
-        x = (WIDTH - (right - left)) // 2 - left
-        draw.text((x, y - top), text, font=font, fill=BLACK)
-
-    return img
+def build_context(cfg: dict[str, Any]) -> dict[str, Any]:
+    """Junta todos los datos que necesitan los tiles. Nunca lanza."""
+    weather = openmeteo.get_weather(cfg) if cfg["weather"]["enabled"] else None
+    return {
+        "now": _now(cfg),
+        "cfg": cfg,
+        "weather": weather,
+        # La fuente de tareas llega en la próxima fase; por ahora, vacía.
+        "tasks": [],
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -72,15 +58,17 @@ def main(argv: list[str] | None = None) -> int:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
-    _setup_locale()
 
     try:
+        # Los datos se juntan antes de tocar el panel: la red puede tardar
+        # hasta el timeout y no tiene sentido tenerlo despierto mientras tanto.
+        image = None if args.clear else render(build_context(config.load()))
         with get_display(args.backend) as display:
-            if args.clear:
+            if image is None:
                 display.clear()
                 log.info("Pantalla limpiada")
             else:
-                display.show(render())
+                display.show(image)
                 log.info("Dashboard actualizado")
     except Exception:
         log.exception("Falló la actualización del dashboard")

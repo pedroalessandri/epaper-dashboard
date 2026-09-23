@@ -3,8 +3,6 @@
 Cada tile dibuja dentro de un rectángulo que le asigna el layout. Ningún tile
 conoce sus coordenadas absolutas: eso vive en un solo lugar (``render.py``),
 así mover un bloque es cambiar una línea.
-
-Se usa en la fase 1b. En la fase 0 solo queda definida la forma.
 """
 
 from __future__ import annotations

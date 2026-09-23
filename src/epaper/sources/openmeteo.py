@@ -43,17 +43,18 @@ HOURLY_VARS = (
 DAILY_VARS = ("weather_code", "temperature_2m_max", "temperature_2m_min")
 
 # Código WMO -> (etiqueta corta, identificador de ícono).
+# Etiquetas de hasta ~14 caracteres: tienen que entrar en la columna de HOY.
 # https://open-meteo.com/en/docs  (sección "WMO Weather interpretation codes")
 WMO_CODES: dict[int, tuple[str, str]] = {
     0: ("despejado", "clear"),
-    1: ("mayorm. despejado", "mostly_clear"),
-    2: ("parcial. nublado", "partly_cloudy"),
+    1: ("casi despejado", "mostly_clear"),
+    2: ("algo nublado", "partly_cloudy"),
     3: ("nublado", "cloudy"),
     45: ("niebla", "fog"),
-    48: ("niebla con escarcha", "fog"),
+    48: ("niebla", "fog"),
     51: ("llovizna leve", "drizzle"),
     53: ("llovizna", "drizzle"),
-    55: ("llovizna intensa", "drizzle"),
+    55: ("llovizna", "drizzle"),
     56: ("llovizna helada", "freezing_rain"),
     57: ("llovizna helada", "freezing_rain"),
     61: ("lluvia leve", "rain"),
@@ -64,15 +65,15 @@ WMO_CODES: dict[int, tuple[str, str]] = {
     71: ("nevada leve", "snow"),
     73: ("nevada", "snow"),
     75: ("nevada fuerte", "snow"),
-    77: ("granos de nieve", "snow"),
+    77: ("nieve", "snow"),
     80: ("chaparrones", "showers"),
     81: ("chaparrones", "showers"),
-    82: ("chaparrones fuertes", "heavy_rain"),
-    85: ("chaparrones de nieve", "snow"),
-    86: ("chaparrones de nieve", "snow"),
+    82: ("chaparrones", "heavy_rain"),
+    85: ("nevadas", "snow"),
+    86: ("nevadas", "snow"),
     95: ("tormenta", "thunderstorm"),
-    96: ("tormenta con granizo", "thunderstorm"),
-    99: ("tormenta con granizo", "thunderstorm"),
+    96: ("granizo", "thunderstorm"),
+    99: ("granizo", "thunderstorm"),
 }
 UNKNOWN_CONDITION = ("sin dato", "unknown")
 
