@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}epaper{% endblock %}</title>
+<style>
+  :root { --ink: #111; --paper: #fff; --muted: #666; --line: #ddd; --accent: #111; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #eee; --paper: #161616; --muted: #999; --line: #333; --accent: #eee; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+         font: 17px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px; }
+  nav { display: flex; gap: 16px; align-items: baseline; border-bottom: 1px solid var(--line);
+        padding-bottom: 8px; margin-bottom: 16px; }
+  nav strong { margin-right: auto; }
+  nav a { color: var(--muted); text-decoration: none; }
+  nav a.on { color: var(--ink); font-weight: 600; }
+  form { margin: 0; }
+  input[type=text] { font: inherit; padding: 10px 12px; border: 1px solid var(--line);
+                     border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
+  button { font: inherit; cursor: pointer; border-radius: 8px; }
+  .primary { padding: 10px 16px; background: var(--accent); color: var(--paper); border: 0; }
+  .ghost { background: none; border: 0; color: var(--muted); padding: 6px 8px; }
+  .muted { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <nav>
+    <strong>epaper</strong>
+    {% for href, label in sections %}
+      <a href="{{ href }}" class="{{ 'on' if href == current }}">{{ label }}</a>
+    {% endfor %}
+  </nav>
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

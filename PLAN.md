@@ -260,6 +260,31 @@ la ciudad, tocar refrescar, y ver el cambio reflejado en la pantalla física.
 `http.server` con un formulario HTML plano. La funcionalidad importa más que
 el framework.
 
+**Estado (2026-09-24)**: hecho el panel de administración con la sección
+Tareas (puntos 3 salvo config, 3b, 4 y 5). Tareas en `tasks.json`, sin
+autenticación a propósito (son tareas de la casa). Cada cambio refresca la
+pantalla respetando 180 s entre refrescos (`refresh.py`). Pendiente: editar la
+configuración desde la web.
+
+---
+
+## Fase 3c — Modo mensaje
+
+**Objetivo**: dejar un mensaje para la familia en la pantalla, en vez del
+dashboard, y volver al dashboard cuando se quiera.
+
+1. Nueva sección "Mensaje" en el panel web: textarea de texto plano, guardar,
+   y un switch **dashboard / mensaje**.
+2. Estado en un archivo local (texto + modo activo), escrito con fsync como
+   `tasks.json`.
+3. Render del modo mensaje: texto grande centrado dentro de un marco, con
+   ajuste automático del tamaño de letra al largo del texto y corte de línea
+   por palabras.
+4. `main.py` elige qué renderizar según el modo; el timer sigue igual.
+
+**Verificación**: escribir un mensaje desde el celular, activarlo, verlo en
+la pantalla; volver al dashboard.
+
 ---
 
 ## Fase 4 — Módulos adicionales

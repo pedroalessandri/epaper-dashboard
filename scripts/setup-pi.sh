@@ -78,8 +78,13 @@ sudo sed -i "s#__REPO_DIR__#$REPO_DIR#g; s#__USER__#$USER#g" \
     /etc/systemd/system/epaper-web.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now epaper.timer
+sudo systemctl enable epaper-web.service
+sudo systemctl restart epaper-web.service
+
+sync  # que nada de lo instalado quede solo en caché si se corta la luz
 
 say "Listo"
+echo "  Panel web:      http://$(hostname).local:8080"
 echo "  Probar ahora:   sudo systemctl start epaper.service"
 echo "  Ver el log:     journalctl -u epaper.service -n 30 --no-pager"
 echo "  Ver el timer:   systemctl list-timers epaper.timer"

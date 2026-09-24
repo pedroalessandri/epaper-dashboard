@@ -15,19 +15,4 @@ TARGET="$USER_NAME@$HOST"
 
 echo "==> Desplegando en $TARGET:$REMOTE_DIR"
 
-ssh "$TARGET" bash -s <<EOF
-set -euo pipefail
-cd $REMOTE_DIR
-echo "--- git pull"
-git pull --ff-only
-echo "--- dependencias"
-.venv/bin/pip install -q -r requirements.txt
-echo "--- reiniciar servicio"
-sudo systemctl restart epaper.service
-sleep 3
-echo "--- estado"
-systemctl is-active epaper.service || true
-EOF
-
-echo "==> Últimas líneas del log"
-ssh "$TARGET" "journalctl -u epaper.service -n 15 --no-pager"
+ssh "$TARGET" "cd $REMOTE_DIR && ./scripts/update.sh"
