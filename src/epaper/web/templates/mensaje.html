@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Mensaje · epaper{% endblock %}
+{% block content %}
+<style>
+  textarea { font: inherit; font-size: 20px; width: 100%; min-height: 8em; padding: 10px 12px;
+             border: 1px solid var(--line); border-radius: 8px; background: var(--paper);
+             color: var(--ink); resize: vertical; }
+  .actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .actions .muted { margin-left: auto; }
+</style>
+
+<form method="post" action="/mensaje">
+  <textarea name="text" maxlength="{{ max_text }}" placeholder="Escribí un mensaje para la pantalla"
+            autofocus>{{ screen.text }}</textarea>
+  <div class="actions">
+    <button class="primary" name="action" value="mostrar">
+      {{ 'Actualizar mensaje' if screen.shows_message else 'Mostrar en pantalla' }}
+    </button>
+    {% if not screen.shows_message %}
+    <button class="ghost" name="action" value="guardar">Guardar sin mostrar</button>
+    {% endif %}
+    <span class="muted">hasta {{ max_text }} caracteres</span>
+  </div>
+</form>
+{% endblock %}

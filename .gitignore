@@ -5,3 +5,4 @@ config.yaml
 out/*
 !out/.gitkeep
 tasks.json
+message.json

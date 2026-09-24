@@ -8,10 +8,6 @@
   li .title { flex: 1; overflow-wrap: anywhere; }
   li.done .title { color: var(--muted); text-decoration: line-through; }
   .check { background: none; border: 0; color: var(--ink); font-size: 22px; padding: 4px 8px; }
-  .footer { display: flex; justify-content: space-between; align-items: center; gap: 8px;
-            margin: 16px 0; flex-wrap: wrap; }
-  .preview { width: 100%; height: auto; border: 1px solid var(--line); image-rendering: pixelated;
-             background: #fff; }
 </style>
 
 <form class="add" method="post" action="/tareas">
@@ -41,19 +37,12 @@
 <p class="muted">No hay tareas.</p>
 {% endif %}
 
-<div class="footer">
-  <span class="muted">{{ status }}</span>
-  <span>
-    {% if tasks|selectattr('done')|list %}
-    <form method="post" action="/tareas/limpiar" style="display:inline">
-      <button class="ghost">Borrar hechas</button>
-    </form>
-    {% endif %}
-    <form method="post" action="/refrescar" style="display:inline">
-      <button class="ghost">Actualizar pantalla</button>
-    </form>
-  </span>
-</div>
+{% endblock %}
 
-<img class="preview" src="/preview.png?t={{ stamp }}" alt="Última imagen enviada a la pantalla">
+{% block footer_actions %}
+{% if tasks|selectattr('done')|list %}
+<form method="post" action="/tareas/limpiar" style="display:inline">
+  <button class="ghost">Borrar hechas</button>
+</form>
+{% endif %}
 {% endblock %}

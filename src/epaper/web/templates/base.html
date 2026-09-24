@@ -25,6 +25,12 @@
   .primary { padding: 10px 16px; background: var(--accent); color: var(--paper); border: 0; }
   .ghost { background: none; border: 0; color: var(--muted); padding: 6px 8px; }
   .muted { color: var(--muted); font-size: 14px; }
+  .banner { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            border: 2px solid var(--ink); border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; }
+  .footer { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            margin: 16px 0; flex-wrap: wrap; }
+  .preview { width: 100%; height: auto; border: 1px solid var(--line); image-rendering: pixelated;
+             background: #fff; }
 </style>
 </head>
 <body>
@@ -35,7 +41,27 @@
       <a href="{{ href }}" class="{{ 'on' if href == current }}">{{ label }}</a>
     {% endfor %}
   </nav>
+  {% if screen.shows_message %}
+  <div class="banner">
+    <span>En pantalla: <strong>mensaje</strong></span>
+    <form method="post" action="/modo/dashboard">
+      <input type="hidden" name="volver" value="{{ current }}">
+      <button class="ghost">Volver al dashboard</button>
+    </form>
+  </div>
+  {% endif %}
   {% block content %}{% endblock %}
+  <div class="footer">
+    <span class="muted">{{ status }}</span>
+    <span>
+      {% block footer_actions %}{% endblock %}
+      <form method="post" action="/refrescar" style="display:inline">
+        <input type="hidden" name="volver" value="{{ current }}">
+        <button class="ghost">Actualizar pantalla</button>
+      </form>
+    </span>
+  </div>
+  <img class="preview" src="/preview.png?t={{ stamp }}" alt="Última imagen enviada a la pantalla">
 </main>
 </body>
 </html>

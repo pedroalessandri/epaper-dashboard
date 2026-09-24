@@ -1,8 +1,9 @@
 """Panel de administración del dashboard.
 
 Corre en la misma Pi (``epaper-web.service``), sin autenticación: es para la
-red de la casa. Hoy tiene una sección, Tareas; las siguientes (mensajes,
-configuración) se suman como otra entrada en ``SECTIONS`` y su template.
+red de la casa. Secciones: Tareas y Mensaje (alterna la pantalla entre el
+dashboard y un texto con marco). Una sección nueva es otra entrada en
+``SECTIONS`` más su template.
 
 Cada cambio pide un refresco del panel. El agendador respeta el mínimo de
 180 s entre refrescos: si hace falta esperar, deja uno solo programado para
@@ -28,15 +29,17 @@ from fastapi.templating import Jinja2Templates
 
 from epaper import refresh
 from epaper.display import MockDisplay
+from epaper.sources.message import MAX_TEXT, MessageStore
 from epaper.sources.tasks import LocalTaskSource
 
 log = logging.getLogger(__name__)
 
-SECTIONS = [("/", "Tareas")]
+SECTIONS = [("/", "Tareas"), ("/mensaje", "Mensaje")]
 
 app = FastAPI(title="epaper", docs_url=None, redoc_url=None)
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 tasks = LocalTaskSource()
+messages = MessageStore()
 
 
 class RefreshScheduler:
@@ -95,9 +98,24 @@ class RefreshScheduler:
 scheduler = RefreshScheduler()
 
 
-def _back() -> RedirectResponse:
+def _back(to: str = "/") -> RedirectResponse:
     # 303: después de un POST el navegador vuelve con GET (patrón PRG).
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(to, status_code=303)
+
+
+def _page(request: Request, template: str, current: str, **extra):
+    return templates.TemplateResponse(
+        request,
+        template,
+        {
+            "sections": SECTIONS,
+            "current": current,
+            "screen": messages.get(),
+            "status": _status(),
+            "stamp": int(time.time()),
+            **extra,
+        },
+    )
 
 
 def _status() -> str:
@@ -114,17 +132,7 @@ def _status() -> str:
 
 @app.get("/")
 def tasks_page(request: Request):
-    return templates.TemplateResponse(
-        request,
-        "tareas.html",
-        {
-            "sections": SECTIONS,
-            "current": "/",
-            "tasks": tasks.get_tasks(),
-            "status": _status(),
-            "stamp": int(time.time()),
-        },
-    )
+    return _page(request, "tareas.html", "/", tasks=tasks.get_tasks())
 
 
 @app.post("/tareas")
@@ -155,10 +163,37 @@ def task_action(task_id: str, action: str):
     return _back()
 
 
-@app.post("/refrescar")
-def refresh_now():
+@app.get("/mensaje")
+def message_page(request: Request):
+    return _page(request, "mensaje.html", "/mensaje", max_text=MAX_TEXT)
+
+
+@app.post("/mensaje")
+def save_message(text: str = Form(""), action: str = Form("mostrar")):
+    if action == "mostrar" and text.strip():
+        messages.show_message(text)
+        scheduler.request()
+    else:
+        before = messages.get()
+        after = messages.save_text(text)
+        if before.shows_message != after.shows_message or (
+            after.shows_message and before.text != after.text
+        ):
+            scheduler.request()
+    return _back("/mensaje")
+
+
+@app.post("/modo/dashboard")
+def show_dashboard(volver: str = Form("/")):
+    messages.show_dashboard()
     scheduler.request()
-    return _back()
+    return _back(volver if volver in dict(SECTIONS) else "/")
+
+
+@app.post("/refrescar")
+def refresh_now(volver: str = Form("/")):
+    scheduler.request()
+    return _back(volver if volver in dict(SECTIONS) else "/")
 
 
 @app.get("/preview.png")

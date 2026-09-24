@@ -17,6 +17,8 @@ from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
+from epaper.storage import atomic_write_text
+
 log = logging.getLogger(__name__)
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -97,19 +99,7 @@ class LocalTaskSource(TaskSource):
             self._save(tasks)
 
     def _save(self, tasks: list[Task]) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self.path.with_suffix(".tmp")
         payload = json.dumps(
             {"tasks": [asdict(t) for t in tasks]}, ensure_ascii=False, indent=1
         )
-        with open(tmp, "w", encoding="utf-8") as fh:
-            fh.write(payload)
-            fh.flush()
-            os.fsync(fh.fileno())
-        tmp.replace(self.path)
-        # fsync del directorio para que el rename también quede en disco.
-        dir_fd = os.open(self.path.parent, os.O_RDONLY)
-        try:
-            os.fsync(dir_fd)
-        finally:
-            os.close(dir_fd)
+        atomic_write_text(self.path, payload)

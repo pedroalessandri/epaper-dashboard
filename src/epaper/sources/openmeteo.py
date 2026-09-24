@@ -26,6 +26,8 @@ from typing import Any
 
 import requests
 
+from epaper.storage import atomic_write_text
+
 log = logging.getLogger(__name__)
 
 API_URL = "https://api.open-meteo.com/v1/forecast"
@@ -267,10 +269,7 @@ def _write_cache(path: Path, report: WeatherReport, cfg: dict[str, Any]) -> None
         "report": asdict(report),
     }
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, default=str, ensure_ascii=False, indent=1))
-        tmp.replace(path)  # atómico: un corte de luz no deja la caché a medias
+        atomic_write_text(path, json.dumps(data, default=str, ensure_ascii=False, indent=1))
     except OSError as exc:
         log.error("No se pudo escribir la caché %s: %s", path, exc)
 

@@ -285,6 +285,11 @@ dashboard, y volver al dashboard cuando se quiera.
 **Verificación**: escribir un mensaje desde el celular, activarlo, verlo en
 la pantalla; volver al dashboard.
 
+**Estado (2026-09-24)**: hecho. Estado en `message.json`. Marco doble, letra
+bold que se ajusta de 112 a 24 px, sin palabras huérfanas. Un mensaje fijo no
+se vuelve a refrescar (se compara la firma de la imagen), salvo una vez por
+día para cuidar el panel.
+
 ---
 
 ## Fase 4 — Módulos adicionales
