@@ -43,6 +43,10 @@ HOURLY_VARS = (
     "weather_code",
 )
 DAILY_VARS = ("weather_code", "temperature_2m_max", "temperature_2m_min")
+CURRENT_VARS = ("temperature_2m", "apparent_temperature", "weather_code", "is_day")
+
+# Íconos con versión nocturna (luna en vez de sol), solo para el clima actual.
+_NIGHT_ICONS = {"clear", "mostly_clear", "partly_cloudy"}
 
 # Código WMO -> (etiqueta corta, identificador de ícono).
 # Etiquetas de hasta ~14 caracteres: tienen que entrar en la columna de HOY.
@@ -117,6 +121,19 @@ class DayForecast:
 
 
 @dataclass(frozen=True)
+class CurrentWeather:
+    """Condiciones en el momento de la consulta (resolución de 15 min)."""
+
+    time: datetime  # hora local de la medición, sin zona
+    temperature: float
+    apparent_temperature: float
+    weather_code: int
+    is_day: bool
+    label: str
+    icon: str  # con variante "_night" de noche, si la hay
+
+
+@dataclass(frozen=True)
 class WeatherReport:
     location: str
     today: date
@@ -124,6 +141,7 @@ class WeatherReport:
     days: list[DayForecast]
     fetched_at: datetime  # UTC
     stale: bool = False  # True si viene de la caché por un fallo de red
+    current: CurrentWeather | None = None
 
 
 # --------------------------------------------------------------------------
@@ -164,6 +182,7 @@ def _fetch(cfg: dict[str, Any]) -> dict[str, Any]:
         "forecast_days": 1 + cfg["weather"]["forecast_days"],
         "hourly": ",".join(HOURLY_VARS),
         "daily": ",".join(DAILY_VARS),
+        "current": ",".join(CURRENT_VARS),
     }
     resp = requests.get(API_URL, params=params, timeout=TIMEOUT_S)
     resp.raise_for_status()
@@ -219,7 +238,30 @@ def _aggregate(payload: dict[str, Any], cfg: dict[str, Any]) -> WeatherReport:
         periods=periods,
         days=days,
         fetched_at=datetime.now(timezone.utc).replace(microsecond=0),
+        current=_current(payload.get("current")),
     )
+
+
+def _current(data: dict[str, Any] | None) -> CurrentWeather | None:
+    """El clima actual es un extra: si falta o viene incompleto, no rompe nada."""
+    try:
+        code = int(data["weather_code"])
+        is_day = bool(data["is_day"])
+        label, icon = describe(code)
+        if not is_day and icon in _NIGHT_ICONS:
+            icon += "_night"
+        return CurrentWeather(
+            time=datetime.fromisoformat(data["time"]),
+            temperature=round(float(data["temperature_2m"]), 1),
+            apparent_temperature=round(float(data["apparent_temperature"]), 1),
+            weather_code=code,
+            is_day=is_day,
+            label=label,
+            icon=icon,
+        )
+    except Exception as exc:  # None, clave faltante, valor null
+        log.warning("Clima actual no disponible (%s: %s)", type(exc).__name__, exc)
+        return None
 
 
 def _aggregate_period(
@@ -294,6 +336,12 @@ def _read_cache(path: Path, cfg: dict[str, Any]) -> WeatherReport | None:
             ],
             fetched_at=datetime.fromisoformat(r["fetched_at"]),
             stale=True,
+            # Las cachés anteriores a esta versión no tienen clima actual.
+            current=(
+                CurrentWeather(**{**r["current"], "time": datetime.fromisoformat(r["current"]["time"])})
+                if r.get("current")
+                else None
+            ),
         )
     except FileNotFoundError:
         log.warning("Sin caché de clima en %s", path)
@@ -312,6 +360,15 @@ def _read_cache(path: Path, cfg: dict[str, Any]) -> WeatherReport | None:
 _PERIOD_NAMES = {"morning": "mañana", "afternoon": "tarde", "evening": "noche"}
 
 
+def _format_current(c: CurrentWeather | None) -> str:
+    if c is None:
+        return "AHORA  sin dato"
+    return (
+        f"AHORA  {c.temperature:.1f}°  ST {c.apparent_temperature:.1f}°"
+        f"  [{c.weather_code:2d}] {c.label} ({c.icon})  medido {c.time:%H:%M}"
+    )
+
+
 def format_report(report: WeatherReport | None) -> str:
     if report is None:
         return "Sin datos de clima (fallo de red y sin caché)."
@@ -323,6 +380,8 @@ def format_report(report: WeatherReport | None) -> str:
     lines = [
         f"Clima · {report.location} · hoy {dia(report.today)}",
         f"obtenido {report.fetched_at.isoformat()} · {estado}",
+        "",
+        _format_current(report.current),
         "",
         "HOY",
     ]

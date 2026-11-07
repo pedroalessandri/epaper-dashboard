@@ -44,6 +44,13 @@ def _sun(draw, cx: float, cy: float, r: float, w: int, rays: bool = True) -> Non
         )
 
 
+def _moon(draw, cx: float, cy: float, r: float) -> None:
+    """Luna creciente llena: un círculo negro con un mordisco blanco."""
+    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=BLACK)
+    o = r * 0.55
+    draw.ellipse((cx - r + o, cy - r - o * 0.35, cx + r + o, cy + r - o * 0.35), fill=WHITE)
+
+
 def _cloud(draw, x: float, y: float, w: float, h: float, stroke: int) -> None:
     """Nube con contorno y relleno blanco (tapa lo que haya detrás).
 
@@ -114,6 +121,20 @@ def _partly_cloudy(draw, x, y, s):
     w = _stroke(s)
     _sun(draw, x + s * 0.36, y + s * 0.36, s * 0.17, w)
     _cloud(draw, x + s * 0.18, y + s * 0.36, s * 0.80, s * 0.52, w)
+
+
+def _clear_night(draw, x, y, s):
+    _moon(draw, x + s * 0.48, y + s * 0.50, s * 0.30)
+
+
+def _mostly_clear_night(draw, x, y, s):
+    _moon(draw, x + s * 0.42, y + s * 0.40, s * 0.24)
+    _cloud(draw, x + s * 0.45, y + s * 0.58, s * 0.52, s * 0.36, _stroke(s))
+
+
+def _partly_cloudy_night(draw, x, y, s):
+    _moon(draw, x + s * 0.36, y + s * 0.34, s * 0.22)
+    _cloud(draw, x + s * 0.18, y + s * 0.36, s * 0.80, s * 0.52, _stroke(s))
 
 
 def _cloudy(draw, x, y, s):
@@ -202,6 +223,9 @@ _ICONS = {
     "snow": _snow,
     "thunderstorm": _thunderstorm,
     "unknown": _unknown,
+    "clear_night": _clear_night,
+    "mostly_clear_night": _mostly_clear_night,
+    "partly_cloudy_night": _partly_cloudy_night,
 }
 
 ICON_IDS = tuple(_ICONS)
